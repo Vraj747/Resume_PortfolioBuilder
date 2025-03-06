@@ -1,0 +1,89 @@
+@page "/"
+
+<div class="container mt-4">
+    <div class="jumbotron bg-light p-5 rounded">
+        <h1 class="display-4">AI-Powered Resume & Portfolio Builder</h1>
+        <p class="lead">Create professional resumes, stunning portfolios, and manage your job applications with the help of AI.</p>
+        <hr class="my-4">
+        <p>Get started today and take your career to the next level!</p>
+        <AuthorizeView>
+            <Authorized>
+                <div class="d-flex gap-2">
+                    <a class="btn btn-primary btn-lg" href="/resumes">Manage Resumes</a>
+                    <a class="btn btn-success btn-lg" href="/portfolios">Create Portfolio</a>
+                    <a class="btn btn-info btn-lg" href="/job-applications">Track Applications</a>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="d-flex gap-2">
+                    <a class="btn btn-primary btn-lg" href="/login">Login</a>
+                    <a class="btn btn-outline-primary btn-lg" href="/register">Register</a>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <h3 class="card-title"><i class="oi oi-document display-4 d-block mb-3 text-primary"></i>AI Resume Builder</h3>
+                    <p class="card-text">Create professional resumes tailored to specific job descriptions with AI assistance.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <h3 class="card-title"><i class="oi oi-briefcase display-4 d-block mb-3 text-success"></i>Portfolio Creator</h3>
+                    <p class="card-text">Build impressive online portfolios to showcase your work and skills to potential employers.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <h3 class="card-title"><i class="oi oi-task display-4 d-block mb-3 text-info"></i>Job Application Tracker</h3>
+                    <p class="card-text">Manage your job applications, interviews, and generate AI-powered cover letters.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Key Features</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">AI-powered resume content generation</li>
+                        <li class="list-group-item">Professional portfolio templates</li>
+                        <li class="list-group-item">Automated cover letter creation</li>
+                        <li class="list-group-item">Interview preparation assistance</li>
+                        <li class="list-group-item">Job application tracking system</li>
+                        <li class="list-group-item">Resume and portfolio analytics</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>How It Works</h3>
+                </div>
+                <div class="card-body">
+                    <ol class="list-group list-group-numbered">
+                        <li class="list-group-item">Create an account to get started</li>
+                        <li class="list-group-item">Build your resume with our AI-powered tools</li>
+                        <li class="list-group-item">Create a stunning portfolio to showcase your work</li>
+                        <li class="list-group-item">Track your job applications and interviews</li>
+                        <li class="list-group-item">Generate tailored cover letters for each application</li>
+                        <li class="list-group-item">Prepare for interviews with AI-generated answers</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

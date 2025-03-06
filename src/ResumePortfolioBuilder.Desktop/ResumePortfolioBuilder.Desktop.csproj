@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\ResumePortfolioBuilder.Core\ResumePortfolioBuilder.Core.csproj" />
+    <ProjectReference Include="..\ResumePortfolioBuilder.Data\ResumePortfolioBuilder.Data.csproj" />
+    <ProjectReference Include="..\ResumePortfolioBuilder.AI\ResumePortfolioBuilder.AI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.2" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+</Project>

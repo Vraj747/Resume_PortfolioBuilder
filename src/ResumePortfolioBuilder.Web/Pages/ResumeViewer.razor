@@ -1,0 +1,319 @@
+@page "/resume/view/{Id:guid}"
+@using ResumePortfolioBuilder.Core.Models
+@using ResumePortfolioBuilder.Web.Services
+@inject IApiService ApiService
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+<div class="container">
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (errorMessage != null)
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>@resume.Title</h1>
+            <div>
+                <button class="btn btn-info me-2" @onclick="SuggestImprovements">
+                    <i class="oi oi-lightbulb"></i> Suggest Improvements
+                </button>
+                <a href="/resume/edit/@Id" class="btn btn-primary me-2">
+                    <i class="oi oi-pencil"></i> Edit
+                </a>
+                <a href="/resumes" class="btn btn-secondary">
+                    <i class="oi oi-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h2>@resume.PersonalInfo?.FullName</h2>
+                        <p class="text-muted">@resume.PersonalInfo?.Location</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <p><i class="oi oi-envelope-closed"></i> @resume.PersonalInfo?.Email</p>
+                        <p><i class="oi oi-phone"></i> @resume.PersonalInfo?.Phone</p>
+                        @if (!string.IsNullOrEmpty(resume.PersonalInfo?.LinkedInUrl))
+                        {
+                            <p><i class="oi oi-link-intact"></i> <a href="@resume.PersonalInfo?.LinkedInUrl" target="_blank">LinkedIn</a></p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(resume.Summary))
+        {
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Professional Summary</h3>
+                </div>
+                <div class="card-body">
+                    <p>@resume.Summary</p>
+                </div>
+            </div>
+        }
+
+        @if (resume.WorkExperiences != null && resume.WorkExperiences.Any())
+        {
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Work Experience</h3>
+                </div>
+                <div class="card-body">
+                    @foreach (var experience in resume.WorkExperiences.OrderByDescending(e => e.StartDate))
+                    {
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between">
+                                <h4>@experience.JobTitle</h4>
+                                <span class="text-muted">
+                                    @experience.StartDate.ToString("MMM yyyy") - @(experience.IsCurrent ? "Present" : experience.EndDate?.ToString("MMM yyyy"))
+                                </span>
+                            </div>
+                            <h5>@experience.Company</h5>
+                            <p>@experience.Description</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (resume.Education != null && resume.Education.Any())
+        {
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Education</h3>
+                </div>
+                <div class="card-body">
+                    @foreach (var education in resume.Education.OrderByDescending(e => e.StartDate))
+                    {
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between">
+                                <h4>@education.Institution</h4>
+                                <span class="text-muted">
+                                    @education.StartDate.ToString("yyyy") - @(education.EndDate.HasValue ? education.EndDate.Value.ToString("yyyy") : "Present")
+                                </span>
+                            </div>
+                            <h5>@education.Degree in @education.FieldOfStudy</h5>
+                            @if (!string.IsNullOrEmpty(education.GPA))
+                            {
+                                <p>GPA: @education.GPA</p>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (resume.Skills != null && resume.Skills.Any())
+        {
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Skills</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @foreach (var skill in resume.Skills)
+                        {
+                            <div class="col-md-4 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2">@skill.Name</span>
+                                    <div class="progress flex-grow-1" style="height: 10px;">
+                                        <div class="progress-bar @GetProgressBarClass(skill.Level)" role="progressbar" 
+                                             style="width: @GetProgressBarWidth(skill.Level)%" 
+                                             aria-valuenow="@GetProgressBarWidth(skill.Level)" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (resume.Projects != null && resume.Projects.Any())
+        {
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Projects</h3>
+                </div>
+                <div class="card-body">
+                    @foreach (var project in resume.Projects)
+                    {
+                        <div class="mb-4">
+                            <h4>@project.Name</h4>
+                            <p>@project.Description</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (resume.Certifications != null && resume.Certifications.Any())
+        {
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Certifications</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @foreach (var certification in resume.Certifications)
+                        {
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5>@certification.Name</h5>
+                                        <p class="text-muted">@certification.IssuingOrganization</p>
+                                        <p>Issued: @certification.IssueDate.ToString("MMM yyyy")</p>
+                                        @if (certification.ExpirationDate != null)
+                                        {
+                                            <p>Expires: @certification.ExpirationDate?.ToString("MMM yyyy")</p>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+
+    @if (showImprovementsModal)
+    {
+        <div class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Resume Improvement Suggestions</h5>
+                        <button type="button" class="btn-close" @onclick="CloseImprovementsModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if (isGeneratingSuggestions)
+                        {
+                            <div class="d-flex justify-content-center my-4">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <span class="ms-2">Generating suggestions...</span>
+                            </div>
+                        }
+                        else if (!string.IsNullOrEmpty(improvementSuggestions))
+                        {
+                            <div class="card">
+                                <div class="card-body">
+                                    <pre style="white-space: pre-wrap;">@improvementSuggestions</pre>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CloseImprovementsModal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private Resume resume = new Resume();
+    private bool isLoading = true;
+    private string errorMessage;
+    private bool showImprovementsModal = false;
+    private string improvementSuggestions = "";
+    private bool isGeneratingSuggestions = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadResume();
+    }
+
+    private async Task LoadResume()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            resume = await ApiService.GetResumeAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading resume: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private string GetProgressBarClass(SkillLevel level)
+    {
+        return level.ToString().ToLower() switch
+        {
+            "beginner" => "bg-info",
+            "intermediate" => "bg-primary",
+            "advanced" => "bg-success",
+            "expert" => "bg-warning",
+            _ => "bg-secondary"
+        };
+    }
+
+    private int GetProgressBarWidth(SkillLevel level)
+    {
+        return level.ToString().ToLower() switch
+        {
+            "beginner" => 25,
+            "intermediate" => 50,
+            "advanced" => 75,
+            "expert" => 100,
+            _ => 0
+        };
+    }
+
+    private async Task SuggestImprovements()
+    {
+        showImprovementsModal = true;
+        isGeneratingSuggestions = true;
+        improvementSuggestions = "";
+
+        try
+        {
+            improvementSuggestions = await ApiService.SuggestResumeImprovementsAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            improvementSuggestions = $"Error generating suggestions: {ex.Message}";
+        }
+        finally
+        {
+            isGeneratingSuggestions = false;
+        }
+    }
+
+    private void CloseImprovementsModal()
+    {
+        showImprovementsModal = false;
+    }
+} 

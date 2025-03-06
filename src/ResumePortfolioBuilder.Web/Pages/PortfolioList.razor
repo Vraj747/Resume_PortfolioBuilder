@@ -1,0 +1,153 @@
+@page "/portfolios"
+@using ResumePortfolioBuilder.Core.Models
+@using ResumePortfolioBuilder.Web.Services
+@inject IApiService ApiService
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+<h1>My Portfolios</h1>
+
+<div class="mb-3">
+    <a href="/portfolio/create" class="btn btn-primary">
+        <i class="oi oi-plus"></i> Create New Portfolio
+    </a>
+</div>
+
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+else if (portfolios == null || !portfolios.Any())
+{
+    <div class="alert alert-info">
+        You don't have any portfolios yet. Click the "Create New Portfolio" button to get started.
+    </div>
+}
+else
+{
+    <div class="row">
+        @foreach (var portfolio in portfolios)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">@portfolio.Title</h5>
+                        <p class="card-text">
+                            <small class="text-muted">Last updated: @portfolio.LastUpdated.ToString("MMM dd, yyyy")</small>
+                        </p>
+                        <p class="card-text">@(portfolio.About?.Length > 100 ? portfolio.About.Substring(0, 100) + "..." : portfolio.About)</p>
+                        <p class="card-text">
+                            <span class="badge bg-info">@portfolio.Projects?.Count Projects</span>
+                            <span class="badge bg-secondary">@portfolio.Sections?.Count Sections</span>
+                        </p>
+                        <p class="card-text">
+                            <small class="text-muted">Public URL: <a href="/portfolio/public/@portfolio.UniqueUrl" target="_blank">@portfolio.UniqueUrl</a></small>
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="btn-group w-100" role="group">
+                            <a href="/portfolio/edit/@portfolio.Id" class="btn btn-outline-primary">
+                                <i class="oi oi-pencil"></i> Edit
+                            </a>
+                            <a href="/portfolio/view/@portfolio.Id" class="btn btn-outline-success">
+                                <i class="oi oi-eye"></i> View
+                            </a>
+                            <button @onclick="() => DeletePortfolio(portfolio.Id)" class="btn btn-outline-danger">
+                                <i class="oi oi-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if (showDeleteConfirmation)
+{
+    <div class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" @onclick="CancelDelete"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this portfolio? This will also remove the public portfolio page.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CancelDelete">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private IEnumerable<Portfolio> portfolios;
+    private bool isLoading = true;
+    private string errorMessage;
+    private bool showDeleteConfirmation = false;
+    private Guid portfolioToDeleteId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPortfolios();
+    }
+
+    private async Task LoadPortfolios()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            portfolios = await ApiService.GetPortfoliosAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading portfolios: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void DeletePortfolio(Guid id)
+    {
+        portfolioToDeleteId = id;
+        showDeleteConfirmation = true;
+    }
+
+    private void CancelDelete()
+    {
+        showDeleteConfirmation = false;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        try
+        {
+            await ApiService.DeletePortfolioAsync(portfolioToDeleteId);
+            showDeleteConfirmation = false;
+            await LoadPortfolios();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting portfolio: {ex.Message}";
+            showDeleteConfirmation = false;
+        }
+    }
+} 

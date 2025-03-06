@@ -1,0 +1,211 @@
+@page "/job-applications"
+@using ResumePortfolioBuilder.Core.Models
+@using ResumePortfolioBuilder.Web.Services
+@inject IApiService ApiService
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+<h1>Job Applications</h1>
+
+<div class="mb-3 d-flex justify-content-between">
+    <div>
+        <a href="/job-application/create" class="btn btn-primary">
+            <i class="oi oi-plus"></i> Add New Application
+        </a>
+    </div>
+    <div class="btn-group">
+        <button class="btn @(currentFilter == null ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => FilterByStatus(null))">All</button>
+        <button class="btn @(currentFilter == "Applied" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => FilterByStatus("Applied"))">Applied</button>
+        <button class="btn @(currentFilter == "Interview" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => FilterByStatus("Interview"))">Interview</button>
+        <button class="btn @(currentFilter == "Offer" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => FilterByStatus("Offer"))">Offer</button>
+        <button class="btn @(currentFilter == "Rejected" ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => FilterByStatus("Rejected"))">Rejected</button>
+    </div>
+</div>
+
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger">
+        @errorMessage
+    </div>
+}
+else if (jobApplications == null || !jobApplications.Any())
+{
+    <div class="alert alert-info">
+        No job applications found. Click the "Add New Application" button to get started.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Job Title</th>
+                    <th>Status</th>
+                    <th>Applied Date</th>
+                    <th>Last Activity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var application in jobApplications)
+                {
+                    <tr class="@GetRowClass(application.Status.ToString())">
+                        <td>@application.Company</td>
+                        <td>@application.JobTitle</td>
+                        <td><span class="badge @GetStatusBadgeClass(application.Status.ToString())">@application.Status</span></td>
+                        <td>@application.ApplicationDate.ToString("MMM dd, yyyy")</td>
+                        <td>
+                            @if (application.ActivityLog != null && application.ActivityLog.Any())
+                            {
+                                var lastActivity = application.ActivityLog.OrderByDescending(a => a.Date).First();
+                                <span title="@lastActivity.Description">@lastActivity.Date.ToString("MMM dd, yyyy")</span>
+                            }
+                            else
+                            {
+                                <span>-</span>
+                            }
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="/job-application/edit/@application.Id" class="btn btn-sm btn-outline-primary">
+                                    <i class="oi oi-pencil"></i>
+                                </a>
+                                <a href="/job-application/view/@application.Id" class="btn btn-sm btn-outline-success">
+                                    <i class="oi oi-eye"></i>
+                                </a>
+                                <button @onclick="() => DeleteJobApplication(application.Id)" class="btn btn-sm btn-outline-danger">
+                                    <i class="oi oi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (showDeleteConfirmation)
+{
+    <div class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" @onclick="CancelDelete"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this job application?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CancelDelete">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private IEnumerable<JobApplication> jobApplications;
+    private bool isLoading = true;
+    private string errorMessage;
+    private bool showDeleteConfirmation = false;
+    private Guid jobApplicationToDeleteId;
+    private string currentFilter = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadJobApplications();
+    }
+
+    private async Task LoadJobApplications()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            if (string.IsNullOrEmpty(currentFilter))
+            {
+                jobApplications = await ApiService.GetJobApplicationsAsync();
+            }
+            else
+            {
+                jobApplications = await ApiService.GetJobApplicationsByStatusAsync(currentFilter);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading job applications: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task FilterByStatus(string status)
+    {
+        currentFilter = status;
+        await LoadJobApplications();
+    }
+
+    private string GetStatusBadgeClass(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "applied" => "bg-primary",
+            "interview" => "bg-info",
+            "offer" => "bg-success",
+            "rejected" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetRowClass(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "offer" => "table-success",
+            "rejected" => "table-danger",
+            _ => ""
+        };
+    }
+
+    private void DeleteJobApplication(Guid id)
+    {
+        jobApplicationToDeleteId = id;
+        showDeleteConfirmation = true;
+    }
+
+    private void CancelDelete()
+    {
+        showDeleteConfirmation = false;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        try
+        {
+            await ApiService.DeleteJobApplicationAsync(jobApplicationToDeleteId);
+            showDeleteConfirmation = false;
+            await LoadJobApplications();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting job application: {ex.Message}";
+            showDeleteConfirmation = false;
+        }
+    }
+} 

@@ -1,0 +1,495 @@
+@page "/resume/create"
+@page "/resume/edit/{Id:guid}"
+@using ResumePortfolioBuilder.Core.Models
+@using ResumePortfolioBuilder.Web.Services
+@inject IApiService ApiService
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+<div class="container">
+    <h1>@(Id == null ? "Create New Resume" : "Edit Resume")</h1>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (errorMessage != null)
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+    else
+    {
+        <EditForm Model="@resume" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Basic Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="title" class="form-label">Resume Title</label>
+                            <InputText id="title" @bind-Value="resume.Title" class="form-control" />
+                            <ValidationMessage For="@(() => resume.Title)" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="lastUpdated" class="form-label">Last Updated</label>
+                            <InputDate id="lastUpdated" @bind-Value="resume.ModifiedDate" class="form-control" disabled />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="summary" class="form-label">Professional Summary</label>
+                        <InputTextArea id="summary" @bind-Value="resume.Summary" class="form-control" rows="4" />
+                        <ValidationMessage For="@(() => resume.Summary)" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Personal Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="fullName" class="form-label">Full Name</label>
+                            <InputText id="fullName" @bind-Value="resume.PersonalInfo.FullName" class="form-control" />
+                            <ValidationMessage For="@(() => resume.PersonalInfo.FullName)" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <InputText id="email" @bind-Value="resume.PersonalInfo.Email" class="form-control" />
+                            <ValidationMessage For="@(() => resume.PersonalInfo.Email)" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <InputText id="phone" @bind-Value="resume.PersonalInfo.Phone" class="form-control" />
+                            <ValidationMessage For="@(() => resume.PersonalInfo.Phone)" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="city" class="form-label">City</label>
+                            <InputText id="city" @bind-Value="resume.PersonalInfo.City" class="form-control" />
+                            <ValidationMessage For="@(() => resume.PersonalInfo.City)" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="state" class="form-label">State</label>
+                            <InputText id="state" @bind-Value="resume.PersonalInfo.State" class="form-control" />
+                            <ValidationMessage For="@(() => resume.PersonalInfo.State)" />
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="zipCode" class="form-label">Zip Code</label>
+                            <InputText id="zipCode" @bind-Value="resume.PersonalInfo.ZipCode" class="form-control" />
+                            <ValidationMessage For="@(() => resume.PersonalInfo.ZipCode)" />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="linkedIn" class="form-label">LinkedIn URL</label>
+                        <InputText id="linkedIn" @bind-Value="resume.PersonalInfo.LinkedInUrl" class="form-control" />
+                        <ValidationMessage For="@(() => resume.PersonalInfo.LinkedInUrl)" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Work Experience</h3>
+                    <button type="button" class="btn btn-primary" @onclick="AddWorkExperience">
+                        <i class="oi oi-plus"></i> Add Experience
+                    </button>
+                </div>
+                <div class="card-body">
+                    @if (resume.WorkExperiences == null || !resume.WorkExperiences.Any())
+                    {
+                        <div class="alert alert-info">
+                            No work experience added yet. Click the "Add Experience" button to add your work history.
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var (experience, index) in resume.WorkExperiences.Select((exp, i) => (exp, i)))
+                        {
+                            <div class="card mb-3">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5>@(string.IsNullOrEmpty(experience.JobTitle) ? $"Experience {index + 1}" : experience.JobTitle)</h5>
+                                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => RemoveWorkExperience(index)">
+                                        <i class="oi oi-trash"></i>
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Job Title</label>
+                                            <InputText @bind-Value="experience.JobTitle" class="form-control" />
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Company</label>
+                                            <InputText @bind-Value="experience.Company" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Start Date</label>
+                                            <InputDate @bind-Value="experience.StartDate" class="form-control" />
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">End Date</label>
+                                            <InputDate @bind-Value="experience.EndDate" class="form-control" />
+                                    <div class="form-check mb-3">
+                                        <InputCheckbox @bind-Value="experience.IsCurrent" id="@($"isCurrent-{index}")" class="form-check-input" />
+                                        <label class="form-check-label" for="@($"isCurrent-{index}")">Current Position</label>
+                                    </div>
+                                </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Description</label>
+                                        <InputTextArea @bind-Value="experience.Description" class="form-control" rows="3" />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Education</h3>
+                    <button type="button" class="btn btn-primary" @onclick="AddEducation">
+                        <i class="oi oi-plus"></i> Add Education
+                    </button>
+                </div>
+                <div class="card-body">
+                    @if (resume.Education == null || !resume.Education.Any())
+                    {
+                        <div class="alert alert-info">
+                            No education added yet. Click the "Add Education" button to add your educational background.
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var (education, index) in resume.Education.Select((edu, i) => (edu, i)))
+                        {
+                            <div class="card mb-3">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5>@(string.IsNullOrEmpty(education.Institution) ? $"Education {index + 1}" : education.Institution)</h5>
+                                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => RemoveEducation(index)">
+                                        <i class="oi oi-trash"></i>
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Institution</label>
+                                            <InputText @bind-Value="education.Institution" class="form-control" />
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Degree</label>
+                                            <InputText @bind-Value="education.Degree" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Field of Study</label>
+                                            <InputText @bind-Value="education.FieldOfStudy" class="form-control" />
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">GPA</label>
+                                            <InputText @bind-Value="education.GPA" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Start Date</label>
+                                            <InputDate @bind-Value="education.StartDate" class="form-control" />
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">End Date</label>
+                                            <InputDate @bind-Value="education.EndDate" class="form-control" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Skills</h3>
+                    <button type="button" class="btn btn-primary" @onclick="AddSkill">
+                        <i class="oi oi-plus"></i> Add Skill
+                    </button>
+                </div>
+                <div class="card-body">
+                    @if (resume.Skills == null || !resume.Skills.Any())
+                    {
+                        <div class="alert alert-info">
+                            No skills added yet. Click the "Add Skill" button to add your skills.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            @foreach (var (skill, index) in resume.Skills.Select((skill, i) => (skill, i)))
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <div class="input-group">
+                                        <InputText @bind-Value="skill.Name" placeholder="Skill name" class="form-control" />
+                                        <select @bind="skill.Level" class="form-select" style="max-width: 150px;">
+                                            <option value="Beginner">Beginner</option>
+                                            <option value="Intermediate">Intermediate</option>
+                                            <option value="Advanced">Advanced</option>
+                                            <option value="Expert">Expert</option>
+                                        </select>
+                                        <button type="button" class="btn btn-danger" @onclick="() => RemoveSkill(index)">
+                                            <i class="oi oi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between mb-4">
+                <a href="/resumes" class="btn btn-secondary">Cancel</a>
+                <div>
+                    @if (Id != null)
+                    {
+                        <button type="button" class="btn btn-info me-2" @onclick="GenerateAIContent">
+                            <i class="oi oi-flash"></i> Generate AI Content
+                        </button>
+                    }
+                    <button type="submit" class="btn btn-primary">Save Resume</button>
+                </div>
+            </div>
+        </EditForm>
+
+        @if (showAIModal)
+        {
+            <div class="modal fade show" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1" role="dialog">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">AI Content Generation</h5>
+                            <button type="button" class="btn-close" @onclick="CloseAIModal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="jobDescription" class="form-label">Job Description</label>
+                                <textarea id="jobDescription" @bind="jobDescription" class="form-control" rows="5" placeholder="Paste the job description here to generate tailored content..."></textarea>
+                            </div>
+
+                            @if (isGeneratingContent)
+                            {
+                                <div class="d-flex justify-content-center my-4">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <span class="ms-2">Generating content...</span>
+                                </div>
+                            }
+                            else if (!string.IsNullOrEmpty(generatedContent))
+                            {
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Generated Content</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <pre style="white-space: pre-wrap;">@generatedContent</pre>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" @onclick="CloseAIModal">Close</button>
+                            <button type="button" class="btn btn-primary" @onclick="GenerateContent" disabled="@(string.IsNullOrEmpty(jobDescription) || isGeneratingContent)">
+                                Generate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    private Resume resume = new Resume();
+    private bool isLoading = true;
+    private string errorMessage;
+    private bool showAIModal = false;
+    private string jobDescription = "";
+    private string generatedContent = "";
+    private bool isGeneratingContent = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            await LoadResume();
+        }
+        else
+        {
+            // Initialize a new resume
+            resume = new Resume
+            {
+                Id = Guid.NewGuid(),
+                PersonalInfo = new PersonalInfo(),
+                WorkExperiences = new List<WorkExperience>(),
+                Education = new List<Education>(),
+                Skills = new List<Skill>(),
+                Projects = new List<Project>(),
+                Certifications = new List<Certification>(),
+                ModifiedDate = DateTime.Now,
+                CreatedDate = DateTime.Now
+            };
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadResume()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            resume = await ApiService.GetResumeAsync(Id.Value);
+            
+            // Initialize collections if they are null
+            resume.WorkExperiences ??= new List<WorkExperience>();
+            resume.Education ??= new List<Education>();
+            resume.Skills ??= new List<Skill>();
+            resume.Projects ??= new List<Project>();
+            resume.Certifications ??= new List<Certification>();
+            resume.PersonalInfo ??= new PersonalInfo();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading resume: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            resume.ModifiedDate = DateTime.Now;
+
+            if (Id.HasValue)
+            {
+                await ApiService.UpdateResumeAsync(resume);
+            }
+            else
+            {
+                await ApiService.CreateResumeAsync(resume);
+            }
+
+            NavigationManager.NavigateTo("/resumes");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error saving resume: {ex.Message}";
+        }
+    }
+
+    private void AddWorkExperience()
+    {
+        resume.WorkExperiences.Add(new WorkExperience
+        {
+            Id = Guid.NewGuid(),
+            StartDate = DateTime.Now.AddYears(-1),
+            EndDate = DateTime.Now
+        });
+    }
+
+    private void RemoveWorkExperience(int index)
+    {
+        resume.WorkExperiences.RemoveAt(index);
+    }
+
+    private void AddEducation()
+    {
+        resume.Education.Add(new Education
+        {
+            Id = Guid.NewGuid(),
+            StartDate = DateTime.Now.AddYears(-4),
+            EndDate = DateTime.Now
+        });
+    }
+
+    private void RemoveEducation(int index)
+    {
+        resume.Education.RemoveAt(index);
+    }
+
+    private void AddSkill()
+    {
+        resume.Skills.Add(new Skill
+        {
+            Id = Guid.NewGuid(),
+            Level = SkillLevel.Intermediate
+        });
+    }
+
+    private void RemoveSkill(int index)
+    {
+        resume.Skills.RemoveAt(index);
+    }
+
+    private void GenerateAIContent()
+    {
+        showAIModal = true;
+        jobDescription = "";
+        generatedContent = "";
+    }
+
+    private void CloseAIModal()
+    {
+        showAIModal = false;
+    }
+
+    private async Task GenerateContent()
+    {
+        if (string.IsNullOrEmpty(jobDescription))
+            return;
+
+        isGeneratingContent = true;
+        generatedContent = "";
+
+        try
+        {
+            generatedContent = await ApiService.GenerateResumeContentAsync(resume.Id, jobDescription);
+        }
+        catch (Exception ex)
+        {
+            generatedContent = $"Error generating content: {ex.Message}";
+        }
+        finally
+        {
+            isGeneratingContent = false;
+        }
+    }
+} 

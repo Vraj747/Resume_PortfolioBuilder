@@ -1,0 +1,25 @@
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+@code {
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    private string _previousTitle;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _previousTitle = await JSRuntime.InvokeAsync<string>("document.title");
+        await JSRuntime.InvokeVoidAsync("document.title", $"{Title} - Resume Portfolio Builder");
+    }
+
+    public void Dispose()
+    {
+        JSRuntime.InvokeVoidAsync("document.title", _previousTitle);
+    }
+}
+
+@ChildContent 

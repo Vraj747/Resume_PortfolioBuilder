@@ -1,0 +1,61 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{36CFAC31-E6A4-4771-A60D-BAB931B64D0F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResumePortfolioBuilder.Core", "src\ResumePortfolioBuilder.Core\ResumePortfolioBuilder.Core.csproj", "{6A670F1B-9892-424E-80FF-ADC4E5F2F20B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResumePortfolioBuilder.Data", "src\ResumePortfolioBuilder.Data\ResumePortfolioBuilder.Data.csproj", "{82444378-F661-4ACD-A109-BC6C7C504660}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResumePortfolioBuilder.AI", "src\ResumePortfolioBuilder.AI\ResumePortfolioBuilder.AI.csproj", "{71DBA09B-DB38-4213-A658-3D1D57D8DF34}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResumePortfolioBuilder.API", "src\ResumePortfolioBuilder.API\ResumePortfolioBuilder.API.csproj", "{44623D39-81B3-4B26-ABD3-8901C8CB8108}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResumePortfolioBuilder.Web", "src\ResumePortfolioBuilder.Web\ResumePortfolioBuilder.Web.csproj", "{EA4E4A29-DFAF-4D85-9E98-D95A1C4CC83E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResumePortfolioBuilder.Desktop", "src\ResumePortfolioBuilder.Desktop\ResumePortfolioBuilder.Desktop.csproj", "{D7CC8D3B-00FD-4073-86AA-D73203F9E1AB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6A670F1B-9892-424E-80FF-ADC4E5F2F20B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A670F1B-9892-424E-80FF-ADC4E5F2F20B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A670F1B-9892-424E-80FF-ADC4E5F2F20B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A670F1B-9892-424E-80FF-ADC4E5F2F20B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82444378-F661-4ACD-A109-BC6C7C504660}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82444378-F661-4ACD-A109-BC6C7C504660}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82444378-F661-4ACD-A109-BC6C7C504660}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82444378-F661-4ACD-A109-BC6C7C504660}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71DBA09B-DB38-4213-A658-3D1D57D8DF34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71DBA09B-DB38-4213-A658-3D1D57D8DF34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71DBA09B-DB38-4213-A658-3D1D57D8DF34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71DBA09B-DB38-4213-A658-3D1D57D8DF34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44623D39-81B3-4B26-ABD3-8901C8CB8108}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44623D39-81B3-4B26-ABD3-8901C8CB8108}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44623D39-81B3-4B26-ABD3-8901C8CB8108}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44623D39-81B3-4B26-ABD3-8901C8CB8108}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA4E4A29-DFAF-4D85-9E98-D95A1C4CC83E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA4E4A29-DFAF-4D85-9E98-D95A1C4CC83E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA4E4A29-DFAF-4D85-9E98-D95A1C4CC83E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA4E4A29-DFAF-4D85-9E98-D95A1C4CC83E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7CC8D3B-00FD-4073-86AA-D73203F9E1AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7CC8D3B-00FD-4073-86AA-D73203F9E1AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7CC8D3B-00FD-4073-86AA-D73203F9E1AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7CC8D3B-00FD-4073-86AA-D73203F9E1AB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6A670F1B-9892-424E-80FF-ADC4E5F2F20B} = {36CFAC31-E6A4-4771-A60D-BAB931B64D0F}
+		{82444378-F661-4ACD-A109-BC6C7C504660} = {36CFAC31-E6A4-4771-A60D-BAB931B64D0F}
+		{71DBA09B-DB38-4213-A658-3D1D57D8DF34} = {36CFAC31-E6A4-4771-A60D-BAB931B64D0F}
+		{44623D39-81B3-4B26-ABD3-8901C8CB8108} = {36CFAC31-E6A4-4771-A60D-BAB931B64D0F}
+		{EA4E4A29-DFAF-4D85-9E98-D95A1C4CC83E} = {36CFAC31-E6A4-4771-A60D-BAB931B64D0F}
+		{D7CC8D3B-00FD-4073-86AA-D73203F9E1AB} = {36CFAC31-E6A4-4771-A60D-BAB931B64D0F}
+	EndGlobalSection
+EndGlobal

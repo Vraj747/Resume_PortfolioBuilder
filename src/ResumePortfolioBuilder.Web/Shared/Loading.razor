@@ -1,0 +1,48 @@
+@if (IsVisible)
+{
+    <div class="loading-container @(FullScreen ? "loading-fullscreen" : "")">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        @if (!string.IsNullOrEmpty(Message))
+        {
+            <div class="loading-message">@Message</div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; } = true;
+
+    [Parameter]
+    public bool FullScreen { get; set; } = false;
+
+    [Parameter]
+    public string Message { get; set; } = "Loading...";
+}
+
+<style>
+    .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+
+    .loading-fullscreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.8);
+        z-index: 9999;
+    }
+
+    .loading-message {
+        margin-top: 1rem;
+        font-size: 1.1rem;
+    }
+</style> 

@@ -1,0 +1,30 @@
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+@using ResumePortfolioBuilder.Web.Authentication
+
+<div class="page">
+    <div class="sidebar">
+        <ResumePortfolioBuilder.Web.Shared.NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4 auth">
+            <LoginDisplay />
+            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    private async Task LogoutAsync()
+    {
+        var authStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        await authStateProvider.UpdateAuthenticationState(null);
+        NavigationManager.NavigateTo("/", true);
+    }
+} 

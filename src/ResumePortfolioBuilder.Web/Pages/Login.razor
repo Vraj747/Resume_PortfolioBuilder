@@ -1,0 +1,105 @@
+@page "/login"
+@using System.ComponentModel.DataAnnotations
+@using ResumePortfolioBuilder.Web.Authentication
+@using ResumePortfolioBuilder.Web.Services
+@inject IApiService ApiService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center">Login</h3>
+            </div>
+            <div class="card-body">
+                <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="form-group mb-3">
+                        <label for="username">Username</label>
+                        <InputText id="username" @bind-Value="loginModel.Username" class="form-control" />
+                        <ValidationMessage For="@(() => loginModel.Username)" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="password">Password</label>
+                        <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control" />
+                        <ValidationMessage For="@(() => loginModel.Password)" />
+                    </div>
+
+                    <div class="form-group d-grid">
+                        <button type="submit" class="btn btn-primary" disabled="@isLoading">
+                            @if (isLoading)
+                            {
+                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <span> Loading...</span>
+                            }
+                            else
+                            {
+                                <span>Login</span>
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger mt-3">
+                        @errorMessage
+                    </div>
+                }
+
+                <div class="mt-3 text-center">
+                    <p>Don't have an account? <a href="/register">Register here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+    private bool isLoading = false;
+    private string errorMessage = string.Empty;
+
+    private async Task HandleLogin()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            var token = await ApiService.LoginAsync(loginModel.Username, loginModel.Password);
+            
+            var userSession = new UserSession
+            {
+                Username = loginModel.Username,
+                Token = token
+            };
+
+            var authStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+            await authStateProvider.UpdateAuthenticationState(userSession);
+
+            NavigationManager.NavigateTo("/", true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private class LoginModel
+    {
+        [Required]
+        public string Username { get; set; }
+
+        [Required]
+        public string Password { get; set; }
+    }
+} 
